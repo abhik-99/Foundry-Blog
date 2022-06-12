@@ -142,4 +142,26 @@ contract OurNFTContractTest is Test {
 				assertEq(currentOwner, address(1));
 				assertEq(name, "Halley");
     }
+
+		function testFuzzOnNftContract(uint n1, uint n2) public {
+				// vm.assume(n1 > 0 && n2 > 0);
+
+        vrfContract.fundSubscription(1, 2 ether);
+        vrfContract.addConsumer(1, address(nftContract));
+
+        // IMPORTANT: Test Will fail with "ERC721: transfer to non ERC721Receiver implementer" otherwise
+        vm.prank(address(1));
+        nftContract.safeMint("Halley");
+
+        uint[] memory randomNumbers = new uint256[](2);
+				randomNumbers[0] = n1;
+				randomNumbers[1] = n2;
+
+				vm.prank(address(vrfContract));
+        nftContract.rawFulfillRandomWords(1, randomNumbers);
+
+				(address currentOwner, , string memory name, , ,) = nftContract.getCharacter(0);
+				assertEq(currentOwner, address(1));
+				assertEq(name, "Halley");
+    }
 }
